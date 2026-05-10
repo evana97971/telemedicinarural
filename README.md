@@ -1,9 +1,1 @@
 # telemedicinarural
-teleenfermeria/
-│
-├── index.html          # Página principal (Panel de administración)
-├── css/
-│   └── style.css       # Estilos separados
-├── js/
-│   └── app.js          # Lógica de pacientes, consultas y estadísticas
-└── README.md           # Descripción del proyecto
