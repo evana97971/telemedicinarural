@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Pacientes</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f9ff; margin:0; }
+    header { background:#0078d7; color:white; text-align:center; padding:20px; }
+    section { padding:20px; max-width:600px; margin:auto; }
+    .formulario { background:white; padding:20px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    input, textarea, select, button { width:100%; padding:10px; margin:10px 0; border-radius:5px; border:1px solid #ccc; }
+    button { background:#0078d7; color:white; border:none; cursor:pointer; }
+    button:hover { background:#00a86b; }
+    table { width:100%; border-collapse:collapse; margin-top:20px; }
+    th, td { border:1px solid #ccc; padding:10px; text-align:left; }
+    #panel { display:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Portal de Pacientes</h1>
+    <p>Solicita tu consulta médica</p>
+  </header>
+
+  <!-- Registro/Login -->
+  <section id="registro">
+    <h2>Registrar Paciente</h2>
+    <form id="registroForm" class="formulario">
+      <input type="text" id="nuevoUsuario" placeholder="Nombre" required>
+      <input type="text" id="dniUsuario" placeholder="DNI" required>
+      <input type="password" id="nuevaClave" placeholder="Contraseña" required>
+      <button type="submit">Registrar</button>
+    </form>
+    <p id="mensajeRegistro"></p>
+  </section>
+
+  <section id="login">
+    <h2>Login</h2>
+    <form id="loginForm" class="formulario">
+      <input type="text" id="usuario" placeholder="Nombre" required>
+      <input type="password" id="clave" placeholder="Contraseña" required>
+      <button type="submit">Ingresar</button>
+    </form>
+    <p id="mensajeLogin"></p>
+  </section>
+
+  <!-- Panel del paciente -->
+  <section id="panel">
+    <button id="logout">Cerrar Sesión</button>
+    <h2>Solicitar Consulta</h2>
+    <form id="consultaForm" class="formulario">
+      <select id="tipoConsulta" required>
+        <option value="medica">Consulta Médica</option>
+        <option value="pediatrica">Consulta Pediátrica</option>
+        <option value="emergencia">Emergencia</option>
+      </select>
+      <textarea id="motivoConsulta" placeholder="Describe tu motivo" required></textarea>
+      <button type="submit">Enviar Solicitud</button>
+    </form>
+
+    <h2>Mis Solicitudes</h2>
+    <table id="tablaConsultas">
+      <thead><tr><th>Tipo</th><th>Motivo</th><th>Estado</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <script>
+    const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+    const consultas = JSON.parse(localStorage.getItem('consultas')) || [];
+
+    // Registro de pacientes
+    document.getElementById('registroForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const nombre = document.getElementById('nuevoUsuario').value;
+      const dni = document.getElementById('dniUsuario').value;
+      const pass = document.getElementById('nuevaClave').value;
+      if (usuarios.some(u => u.nombre === nombre && u.dni === dni)) {
+        document.getElementById('mensajeRegistro').textContent = "⚠️ Paciente ya registrado.";
+      } else {
+        usuarios.push({ nombre, dni, pass });
+        localStorage.setItem('usuarios', JSON.stringify(usuarios));
+        document.getElementById('mensajeRegistro').textContent = "✅ Registro exitoso.";
+        e.target.reset();
+      }
+    });
+
+    // Login
+    document.getElementById('loginForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const nombre = document.getElementById('usuario').value;
+      const clave = document.getElementById('clave').value;
+      const valido = usuarios.some(u => u.nombre === nombre && u.pass === clave);
+      if (valido) {
+        document.getElementById('login').style.display = "none";
+        document.getElementById('registro').style.display = "none";
+        document.getElementById('panel').style.display = "block";
+        mostrarConsultas(nombre);
+      } else {
+        document.getElementById('mensajeLogin').textContent = "❌ Datos incorrectos.";
+      }
+    });
+
+    // Logout
+    document.getElementById('logout').addEventListener('click', () => {
+      document.getElementById('panel').style.display = "none";
+      document.getElementById('login').style.display = "block";
+      document.getElementById('registro').style.display = "block";
+    });
+
+    // Solicitar consulta
+    document.getElementById('consultaForm').addEventListener('submit', e => {
+      e.preventDefault();
+      const tipo = document.getElementById('tipoConsulta').value;
+      const motivo = document.getElementById('motivoConsulta').value;
+      consultas.push({ tipo, motivo, estado: "Pendiente" });
+      localStorage.setItem('consultas', JSON.stringify(consultas));
+      mostrarConsultas();
+      e.target.reset();
+    });
+
+    // Mostrar solicitudes
+    function mostrarConsultas() {
+      const tbody = document.querySelector('#tablaConsultas tbody');
+      tbody.innerHTML = '';
+      consultas.forEach(c => {
+        tbody.innerHTML += `<tr><td>${c.tipo}</td><td>${c.motivo}</td><td>${c.estado}</td></tr>`;
+      });
+    }
+  </script>
+</body>
+</html>
